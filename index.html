@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="AI IDX Hunter - dashboard pemantauan saham Indonesia">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>AI IDX Hunter</title>
+  <style>
+    :root{color-scheme:dark;--bg:#080e19;--panel:#101a2b;--panel2:#142137;--line:#24344d;--text:#edf3ff;--muted:#91a2bb;--green:#36d399;--red:#ff7272;--blue:#77aaff;--amber:#f4c76b}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0d1b2d 0%,var(--bg) 42%);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:980px;margin:auto;padding:18px 14px 40px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:13px;background:#1c3555;display:grid;place-items:center;font-size:22px}
+    h1{font-size:20px;margin:0;letter-spacing:.2px}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .tag{font-size:11px;color:var(--amber);border:1px solid #725b2b;padding:6px 9px;border-radius:20px;white-space:nowrap}
+    .notice{background:#2a2114;border:1px solid #6b5125;color:#f6d89a;padding:11px 13px;border-radius:12px;font-size:12px;line-height:1.5;margin-bottom:15px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric,.panel{background:rgba(16,26,43,.94);border:1px solid var(--line);border-radius:15px}
+    .metric{padding:13px}.metric small{color:var(--muted);font-size:11px}.metric strong{display:block;font-size:21px;margin-top:6px}.up{color:var(--green)}.down{color:var(--red)}
+    .panel{padding:15px;margin-top:13px}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}h2{font-size:15px;margin:0}.hint{font-size:11px;color:var(--muted)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}input,select,button{font:inherit;border-radius:10px;border:1px solid var(--line);background:#0b1525;color:var(--text);padding:10px 11px}
+    input{min-width:0;flex:1}button{cursor:pointer;background:#1b3658;border-color:#31577f;font-weight:600}button.secondary{background:#142137}button:active{transform:scale(.98)}
+    table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--muted);font-size:11px;font-weight:500;padding:9px 6px;border-bottom:1px solid var(--line)}td{padding:12px 6px;border-bottom:1px solid #1b2a40}tr:last-child td{border-bottom:0}
+    .ticker{font-weight:700}.pill{font-size:10px;padding:4px 7px;border-radius:20px;background:#183a34;color:var(--green)}.pill.warn{background:#3c301b;color:var(--amber)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.empty{color:var(--muted);font-size:13px;padding:15px 0}.listitem{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #1b2a40;font-size:13px}.listitem:last-child{border:0}
+    .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:20px;line-height:1.6}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1b3658;border:1px solid #4773a6;padding:11px 15px;border-radius:12px;display:none;max-width:90%;font-size:13px}
+    @media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.wrap{padding:14px 11px 30px}h1{font-size:18px}.metric strong{font-size:19px}table{font-size:12px}.hide-mobile{display:none}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="logo">⌁</div><div><h1>AI IDX Hunter</h1><div class="sub">IDX market scanner · Android PWA</div></div></div>
+    <span class="tag">DEMO DATA</span>
+  </header>
+
+  <div class="notice"><b>Mode simulasi:</b> Data saham di halaman ini adalah contoh untuk menguji dashboard, bukan harga pasar aktual dan bukan rekomendasi transaksi. Koneksi Stockbit/BEI belum aktif.</div>
+
+  <section class="grid">
+    <div class="metric"><small>Saham dipantau</small><strong id="count">6</strong></div>
+    <div class="metric"><small>Momentum kuat</small><strong class="up" id="strong">2</strong></div>
+    <div class="metric"><small>Ambang harga</small><strong>Rp100k</strong></div>
+    <div class="metric"><small>Target sinyal</small><strong class="up">≥5%</strong></div>
+  </section>
+
+  <section class="panel">
+    <div class="panelhead"><h2>Stock Scanner</h2><span class="hint">Daftar contoh · bukan live</span></div>
+    <div class="controls">
+      <input id="search" placeholder="Cari kode saham, mis. BBRI" aria-label="Cari saham">
+      <select id="filter"><option value="all">Semua sinyal</option><option value="strong">Momentum kuat</option><option value="watch">Pantau</option></select>
+      <button id="refresh">Perbarui demo</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Saham</th><th>Harga</th><th>Perubahan</th><th class="hide-mobile">Volume</th><th>Skor AI</th><th>Aksi</th></tr></thead><tbody id="stocks"></tbody></table>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <div class="panelhead"><h2>Watchlist Saya</h2><span class="hint">Tersimpan di perangkat</span></div>
+      <div id="watchlist" class="empty">Belum ada saham tersimpan. Tekan + Pantau pada daftar saham.</div>
+    </section>
+    <section class="panel">
+      <div class="panelhead"><h2>AI Signal Center</h2><span class="pill warn">SIMULASI</span></div>
+      <div class="listitem"><span>Lonjakan volume</span><b class="up">2 indikasi</b></div>
+      <div class="listitem"><span>Akumulasi broker</span><b>Belum tersedia</b></div>
+      <div class="listitem"><span>Order book / running trade</span><b>Belum terhubung</b></div>
+      <div class="listitem"><span>Berita emiten</span><b>Belum terhubung</b></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panelhead"><h2>Pengaturan notifikasi</h2><span class="hint">Izin browser diperlukan</span></div>
+    <p class="hint">Aktifkan notifikasi untuk menguji pemberitahuan lokal. Notifikasi otomatis berbasis pasar baru bisa berjalan setelah sumber data resmi dan mesin pemantau terhubung.</p>
+    <button id="notify">Aktifkan notifikasi demo</button>
+  </section>
+
+  <div class="foot">AI IDX Hunter v0.1 · PWA prototype<br>Versi ini tidak terhubung ke akun Stockbit dan tidak melakukan transaksi.</div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const demoStocks=[
+ {code:"BBRI",price:3920,change:1.8,volume:"1.2M",score:78,state:"strong"},
+ {code:"BMRI",price:4050,change:0.9,volume:"840K",score:64,state:"watch"},
+ {code:"ELSA",price:510,change:5.4,volume:"8.1M",score:86,state:"strong"},
+ {code:"IPCC",price:920,change:2.1,volume:"2.4M",score:69,state:"watch"},
+ {code:"BUMI",price:145,change:-1.2,volume:"12.5M",score:42,state:"watch"},
+ {code:"GOTO",price:68,change:0.4,volume:"25.2M",score:55,state:"watch"}
+];
+const $=id=>document.getElementById(id);
+const money=n=>"Rp"+n.toLocaleString("id-ID");
+function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
+function getWatch(){try{return JSON.parse(localStorage.getItem("idxhunter_watch")||"[]")}catch{return []}}
+function saveWatch(a){localStorage.setItem("idxhunter_watch",JSON.stringify(a));renderWatch()}
+function render(){
+ const q=$("search").value.trim().toUpperCase(), f=$("filter").value;
+ const rows=demoStocks.filter(s=>s.code.includes(q)&&(f==="all"||s.state===f));
+ $("stocks").innerHTML=rows.map(s=>`<tr><td class="ticker">${s.code}</td><td>${money(s.price)}</td><td class="${s.change>=0?"up":"down"}">${s.change>0?"+":""}${s.change.toFixed(1)}%</td><td class="hide-mobile">${s.volume}</td><td><b>${s.score}</b>/100</td><td><button class="secondary" data-add="${s.code}">+ Pantau</button></td></tr>`).join("")||'<tr><td colspan="6" class="empty">Saham tidak ditemukan.</td></tr>';
+ $("count").textContent=demoStocks.length;$("strong").textContent=demoStocks.filter(s=>s.state==="strong").length;
+ document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{let a=getWatch();if(!a.includes(b.dataset.add))a.push(b.dataset.add);saveWatch(a);toast(b.dataset.add+" ditambahkan ke watchlist")});
+}
+function renderWatch(){
+ const a=getWatch();$("watchlist").innerHTML=a.length?a.map(c=>`<div class="listitem"><b>${c}</b><button class="secondary" data-remove="${c}">Hapus</button></div>`).join(""):'Belum ada saham tersimpan. Tekan + Pantau pada daftar saham.';
+ document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>saveWatch(getWatch().filter(x=>x!==b.dataset.remove)));
+}
+$("search").addEventListener("input",render);$("filter").addEventListener("change",render);
+$("refresh").onclick=()=>{render();toast("Data demo diperbarui. Tidak mengambil data pasar.")};
+$("notify").onclick=async()=>{if(!("Notification"in window)){toast("Browser tidak mendukung notifikasi.");return}let p=await Notification.requestPermission();if(p==="granted"){new Notification("AI IDX Hunter",{body:"Notifikasi demo aktif. Belum ada data pasar live."});toast("Izin notifikasi diberikan.")}else toast("Izin notifikasi belum diberikan.")};
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+render();renderWatch();
+</script>
+</body></html>
